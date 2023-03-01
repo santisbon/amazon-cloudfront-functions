@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: URL rewrite for React Router SPA with client-side routing
+
+Parameters:
+  AutoPublishParam:
+    Description: Whether to automatically publish on creation
+    Type: String
+    Default: false
+    AllowedValues: 
+      - true
+      - false
+
+Resources:
+  RewriteFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      AutoPublish: !Ref AutoPublishParam
+      FunctionCode: !Sub |
+        function handler(event) {
+          var request = event.request;
+          var host = request.headers.host.value;
+          request.uri = 'https://' + host;
+
+          return request;
+        }
+      FunctionConfig:
+        Comment: 'Rewrite URL to root'
+        Runtime: cloudfront-js-1.0
+      Name: !Sub "${AWS::StackName}-rewriteFunction"
+
+Outputs:
+  FunctionArn:
+    Description: CloudFront Function
+    Value: !GetAtt RewriteFunction.FunctionMetadata.FunctionARN
