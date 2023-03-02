@@ -1,8 +1,8 @@
 ## URL rewrite for single page applications
 
-### Description
-
 **CloudFront Functions event type: viewer request**
+
+### Description
 
 You can use this function to perform a URL rewrite e.g. to append `index.html` to the end of URLs that don't include a filename or extension; or strip everything after the domain from the URL for SPAs that use client-side routing. This is particularly useful for single page applications or statically-generated websites using frameworks like React, Angular, Vue, Gatsby, or Hugo. These sites are usually stored in an S3 bucket and served through CloudFront for caching. Typically, these applications remove the filename and extension from the URL path. For example, if a user went to `www.example.com/blog`, the actual file in S3 is stored at `<bucket-name>/blog/index.html`. In order for CloudFront to direct the request to the correct file in S3, you need to rewrite the URL to become `www.example.com/blog/index.html` before fetching the file from S3.  
 
@@ -19,8 +19,6 @@ There is a feature in CloudFront called the [default root object](https://docs.a
 [Reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudfront-function.html)
 
 When you create a function the response contains an Amazon Resource Name (ARN) that uniquely identifies the function, and the function’s stage. By default, when you create it it’s in the `DEVELOPMENT` stage. In this stage, you can test the function.  
-
-When you’re ready to use your function with a CloudFront distribution, publish the function to the `LIVE` stage. You can do this by updating the `AWS::CloudFront::Function` resource with the `AutoPublish` property set to true. When the function is published to the `LIVE` stage, you can attach it to a distribution’s cache behavior, using the function’s ARN.
 
 This example function rewrites the URL to eliminate anything after the domain. Useful for Single Page Apps that use client-side routing with libraries like React Router.
 ```shell
@@ -82,3 +80,25 @@ If the function has been set up correctly, you should see the `uri` being update
     }
 }
 ```
+
+### Using the function
+
+When you’re ready to use your function with a CloudFront distribution, publish the function to the `LIVE` stage. You can do this by updating the `AWS::CloudFront::Function` resource with the `AutoPublish` property set to true. 
+
+```shell
+AUTOPUBLISH=true
+
+aws cloudformation deploy \
+    --region $REGION \
+    --stack-name $STACK \
+    --template-file $TEMPLATE \
+    --parameter-overrides AutoPublishParam=$AUTOPUBLISH
+```
+
+When the function is published to the `LIVE` stage, you can attach it to a distribution’s cache behavior using the function’s ARN in the distributions's CloudFormation template.
+
+CloudFront CloudFormation template references:  
+[Distribution](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudfront-distribution.html)  
+[DistributionConfig](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-distributionconfig.html)  
+[CacheBehavior FunctionAssociations](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-cachebehavior.html#cfn-cloudfront-distribution-cachebehavior-functionassociations)  
+[FunctionAssociation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-functionassociation.html)  

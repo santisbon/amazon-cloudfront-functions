@@ -24,7 +24,7 @@ Resources:
           return request;
         }
       FunctionConfig:
-        Comment: 'Rewrite URL to root'
+        Comment: 'Rewrite the URL for SPAs with client-side routing'
         Runtime: cloudfront-js-1.0
       Name: !Sub "${AWS::StackName}-rewriteFunction"
 
