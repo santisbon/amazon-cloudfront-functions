@@ -18,7 +18,12 @@ Resources:
       FunctionCode: !Sub |
         function handler(event) {
           var request = event.request;
-          request.uri = '/';
+          var uri = request.uri;
+
+          if (!uri.includes('assets')) {
+            request.uri = '/';
+          }
+
           return request;
         }
       FunctionConfig:
