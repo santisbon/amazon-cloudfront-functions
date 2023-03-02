@@ -18,9 +18,7 @@ Resources:
       FunctionCode: !Sub |
         function handler(event) {
           var request = event.request;
-          var host = request.headers.host.value;
-          request.uri = 'https://' + host;
-
+          request.uri = '/';
           return request;
         }
       FunctionConfig:
