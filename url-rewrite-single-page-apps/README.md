@@ -1,14 +1,18 @@
-## URL rewrite for single page applications
+## URL rewrite for single page applications (SPAs)
 
 **CloudFront Functions event type: viewer request**
 
 ### Description
 
-You can use this function to perform a URL rewrite e.g. to append `index.html` to the end of URLs that don't include a filename or extension; or strip everything after the domain from the URL for SPAs that use client-side routing. This is particularly useful for single page applications or statically-generated websites using frameworks like React, Angular, Vue, Gatsby, or Hugo. These sites are usually stored in an S3 bucket and served through CloudFront for caching. Typically, these applications remove the filename and extension from the URL path. For example, if a user went to `www.example.com/blog`, the actual file in S3 is stored at `<bucket-name>/blog/index.html`. In order for CloudFront to direct the request to the correct file in S3, you need to rewrite the URL to become `www.example.com/blog/index.html` before fetching the file from S3.  
+You can use this function to perform a URL rewrite on a request. This is particularly useful for single page applications or statically-generated websites using frameworks like React, Angular, Vue, Gatsby, or Hugo. These sites are usually stored in an S3 bucket and served through CloudFront for caching.  
+
+Some of these applications remove the filename and extension from the URL path. For example, if a user went to `www.example.com/blog`, the actual file in S3 is stored at `<bucket-name>/blog/index.html`. In order for CloudFront to direct the request to the correct file in S3, you need to rewrite the URL to become `www.example.com/blog/index.html` before fetching the file from S3.  
+
+Others have client-side routing that intercepts the request and deals with it locally instead of sending it to the server. In this case a navigation to `www.example.com/contacts/1` doesn't mean the server has such a resource as `<bucket-name>/contacts/1`, but the app itself knows what to do to access it.
 
 There are two sample functions.  
-The function in `index.js` intercepts incoming requests to CloudFront and checks that there is a filename and extension. If there isn't a filename and extension, or if the URI ends with a "/", the function appends index.html to the URI.  
-The function in the CloudFormation template removes anything after the domain from the URL.
+- The function in `index.js` intercepts incoming requests to CloudFront and checks that there is a filename and extension. If there isn't a filename and extension, or if the URI ends with a `/`, the function appends `index.html` to the URI.  
+- The function in the CloudFormation template removes anything after the domain from the request except for URLs that are actually server resources such as `assets/`, `img/`, and other server files. This way the SPA can let client-side routing deal with any other resource.
 
 There is a feature in CloudFront called the [default root object](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DefaultRootObject.html) that allows you to specify an index document that applies to the root object only, but not on any subfolders. For example, if you set up index.html as the default root object and a user goes to `www.example.com`, CloudFront automatically rewrites the request to `www.example.com/index.html`. But if a user goes to `www.example.com/blog`, this request is no longer on the root directory, and therefore CloudFront does not rewrite this URL and instead sends it to the origin as is. This function handles rewriting URLs for the root directory and all subfolders. Therefore, you don't need to set up a default root object in CloudFront when you use this function (although there is no harm in setting it up).
 
@@ -20,7 +24,7 @@ There is a feature in CloudFront called the [default root object](https://docs.a
 
 When you create a function the response contains an Amazon Resource Name (ARN) that uniquely identifies the function, and the function’s stage. By default, when you create it it’s in the `DEVELOPMENT` stage. In this stage, you can test the function.  
 
-This example function rewrites the URL to eliminate anything after the domain. Useful for Single Page Apps that use client-side routing with libraries like React Router.
+This example function rewrites the URL to work with client-side routing. Useful for Single Page Apps that use client-side routing with libraries like React Router.
 ```shell
 REGION=us-east-1
 STACK=url-rewrite-stack
