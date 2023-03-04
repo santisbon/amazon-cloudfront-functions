@@ -19,7 +19,7 @@ Resources:
         function handler(event) {
           var request = event.request;
           var uri = request.uri;
-          var paths = ['assets', 'img', 'robots.txt', 'manifest.json']
+          var paths = ['assets', 'img', 'robots.txt', 'app.webmanifest']
           var isServerPath = (path) => uri.includes(path);
 
           if (!paths.some(isServerPath)) {
